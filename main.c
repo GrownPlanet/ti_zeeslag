@@ -162,6 +162,7 @@ int player_turn(int player, CellState_t board[BOARD_W * BOARD_H]) {
     gotoxy(0, 0);
     printf("O"); 
 
+how_bad_can_one_goto_be:
     while (k != K_PLACE) {
         k = getk();
         bool moved = (k == K_UP || k == K_DOWN || k == K_LEFT || k == K_RIGHT);
@@ -188,21 +189,26 @@ int player_turn(int player, CellState_t board[BOARD_W * BOARD_H]) {
     }
 
     gotoxy(x*2, y);
-    int h = 0;
     if (board[y*BOARD_W+x] == CS_Ship) {
         board[y*BOARD_W+x] = CS_ShipHit;
         printf("X");
-        h = 1;
+        while (!getk());
+        return 1;
+    } else if (board[y*BOARD_W+x] == CS_ShipHit || board[y*BOARD_W+x] == CS_WaterHit) {
+        k = 0;
+        goto how_bad_can_one_goto_be;
     } else {
         board[y*BOARD_W+x] = CS_WaterHit;
         printf("-");
+        while (!getk());
+        return 0;
     }
-    while (!getk());
-    return 0;
 }
 
 void game_loop(CellState_t p1[BOARD_W * BOARD_H], CellState_t p2[BOARD_W * BOARD_H], int totalhits) {
-    int player, p1_hits, p2_hits;
+    int player = 0;
+    int p1_hits = 0; 
+    int p2_hits = 0;
     int winner = -1;
 
     while (winner == -1) {
@@ -210,16 +216,16 @@ void game_loop(CellState_t p1[BOARD_W * BOARD_H], CellState_t p2[BOARD_W * BOARD
         switch (player) {
             case 0: 
                 p1_hits += player_turn(1, p2);
-                if (p1_hits == totalhits) winner = 1;
+                if (p1_hits >= totalhits) winner = 1;
                 break;
             case 1: 
                 p2_hits += player_turn(2, p1);
-                if (p2_hits == totalhits) winner = 2;
+                if (p2_hits >= totalhits) winner = 2;
                 break;
             default: clrscr(); printf("ERROR\n"); exit(1);
         }
     }
 
     clrscr();
-    printf("Speler 2 heeft gewonnen!\n");
+    printf("Speler %d heeft gewonnen!\n", winner);
 }
