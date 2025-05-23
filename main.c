@@ -21,8 +21,8 @@ typedef enum {
     CS_Water, CS_Ship, CS_WaterHit, CS_ShipHit
 } CellState_t;
 
-void get_input(int player, CellState_t board[BOARD_W * BOARD_H], int ship_len[NUM_SHIPS]);
-void game_loop(CellState_t p1[BOARD_W * BOARD_H], CellState_t p2[BOARD_W * BOARD_H], int totalhits);
+void get_input(int player, char board[BOARD_W * BOARD_H], int ship_len[NUM_SHIPS]);
+void game_loop(char p1[BOARD_W * BOARD_H], char p2[BOARD_W * BOARD_H], int totalhits);
 
 int main() {
     int ship_len[NUM_SHIPS] = { 5, 4, 3, 2, 2 };
@@ -32,14 +32,14 @@ int main() {
     printf("Gebruik de pijltjes om\nte bewegen, + om te draaien, en - om te plaatsen. - toont een mis aan en X een raak shot aan\nDruk om door te gaan\n");
     while (!getk());
 
-    CellState_t p1_board[BOARD_W * BOARD_H] = { 0 };
+    char p1_board[BOARD_W * BOARD_H] = { 0 };
     get_input(1, p1_board, ship_len);
 
     clrscr();
     printf("Geef de rekenmachine aan speler 2\n");
     while (!getk());
 
-    CellState_t p2_board[BOARD_W * BOARD_H] = { 0 };
+    char p2_board[BOARD_W * BOARD_H] = { 0 };
     get_input(2, p2_board, ship_len);
 
     clrscr();
@@ -48,6 +48,8 @@ int main() {
 
     game_loop(p1_board, p2_board, totalhits);
 
+    while (!getk());
+	
     return 0;
 }
 
@@ -58,7 +60,7 @@ void print_ship(int x, int y, int dir, int len) {
     }
 }
 
-void clear_ship(int x, int y, int dir, int len, CellState_t board[BOARD_W * BOARD_H]) {
+void clear_ship(int x, int y, int dir, int len, char board[BOARD_W * BOARD_H]) {
     for (int i = 0; i < len; i++) {
         int ax = x+i*(dir==0);
         int ay = y+i*(dir==1);
@@ -71,10 +73,10 @@ void clear_ship(int x, int y, int dir, int len, CellState_t board[BOARD_W * BOAR
     }
 }
 
-void get_input(int player, CellState_t board[BOARD_W * BOARD_H], int ship_len[NUM_SHIPS]) {
+void get_input(int player, char board[BOARD_W * BOARD_H], int ship_len[NUM_SHIPS]) {
     clrscr();
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
+    for (int x = 0; x < BOARD_W; x++) {
+        for (int y = 0; y < BOARD_H; y++) {
             gotoxy(x*2, y);
             printf(".");
         }
@@ -136,10 +138,10 @@ void get_input(int player, CellState_t board[BOARD_W * BOARD_H], int ship_len[NU
 }
 
 
-void draw_board(int player, CellState_t board[BOARD_W * BOARD_H]) {
+void draw_board(int player, char board[BOARD_W * BOARD_H]) {
     clrscr();
-    for (int x = 0; x < 10; x++) {
-        for (int y = 0; y < 10; y++) {
+    for (int x = 0; x < BOARD_W; x++) {
+        for (int y = 0; y < BOARD_H; y++) {
             gotoxy(x*2, y);
             switch (board[y*BOARD_W+x]) {
                 case CS_Water: case CS_Ship: printf("."); break;
@@ -153,7 +155,7 @@ void draw_board(int player, CellState_t board[BOARD_W * BOARD_H]) {
     printf("P%d", player);
 }
 
-int player_turn(int player, CellState_t board[BOARD_W * BOARD_H]) {
+int player_turn(int player, char board[BOARD_W * BOARD_H]) {
     int x = 0;
     int y = 0; 
     int k = 0;
@@ -205,14 +207,13 @@ how_bad_can_one_goto_be:
     }
 }
 
-void game_loop(CellState_t p1[BOARD_W * BOARD_H], CellState_t p2[BOARD_W * BOARD_H], int totalhits) {
+void game_loop(char p1[BOARD_W * BOARD_H], char p2[BOARD_W * BOARD_H], int totalhits) {
     int player = 0;
     int p1_hits = 0; 
     int p2_hits = 0;
     int winner = -1;
 
     while (winner == -1) {
-        player = !player;
         switch (player) {
             case 0: 
                 p1_hits += player_turn(1, p2);
@@ -224,6 +225,7 @@ void game_loop(CellState_t p1[BOARD_W * BOARD_H], CellState_t p2[BOARD_W * BOARD
                 break;
             default: clrscr(); printf("ERROR\n"); exit(1);
         }
+        player = !player;
     }
 
     clrscr();
